@@ -1,11 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   useAddEntryMutation,
   useDeleteEntryMutation,
   useGetAllProductsQuery,
   useSearchProductQuery,
 } from "../store/rtkQuerySlice";
-import { isFulfilled } from "@reduxjs/toolkit";
 const addedData = {
   id: 36952,
   name: "Xavier",
@@ -13,13 +12,21 @@ const addedData = {
   year: 2019,
 };
 export default function Data() {
-  const { data, isError, isLoading, isSuccess , refetch } = useGetAllProductsQuery("");
-  const { data: searchData } = useSearchProductQuery("");
+  const { data, isError, isLoading, isSuccess, refetch } =
+    useGetAllProductsQuery("");
+
   const [addEntr] = useAddEntryMutation();
   const [deleteEntry] = useDeleteEntryMutation();
-  console.log( isError, data, isLoading);
-  console.log(searchData);
-  console.log("/*****************************/");
+  const [showSearch, setSearch] = useState("");
+  const getFormData = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const inputData = (
+      (e.target as HTMLFormElement).getElementsByClassName(
+        "tracker"
+      )[0] as HTMLInputElement
+    ).value;
+    setSearch(inputData);
+  };
   return (
     <div>
       Data
@@ -32,6 +39,27 @@ export default function Data() {
       <button onClick={refetch}>Refetch</button>
       <button onClick={() => addEntr(addedData)}>Post Entry</button>
       <button onClick={() => deleteEntry(addedData.id)}>Delete </button>
+      <form onSubmit={getFormData}>
+        <input type="text" className="tracker" />
+        <button type="submit">Submit</button>
+      </form>
+      {showSearch && <SearchedName id={showSearch} />}
     </div>
   );
 }
+
+export const SearchedName = ({ id }: { id: string }) => {
+  const { isSuccess, data: searchData } = useSearchProductQuery(id);
+
+  return (
+    <>
+      {isSuccess && (
+        <ul>
+          <li>{searchData.name}</li>
+          <li>{searchData.age}</li>
+          <li>{searchData.year}</li>
+        </ul>
+      )}
+    </>
+  );
+};
